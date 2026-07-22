@@ -8,7 +8,7 @@ from models import ResponseSignal
 import logging
 from .schemes.data import ProcessRequest
 
-#tenant
+#Tenant
 logger = logging.getLogger("uvicorn.error")
 
 data_router = APIRouter(
