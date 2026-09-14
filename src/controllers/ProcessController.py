@@ -42,7 +42,7 @@ class ProcessController(BaseController):
         Loader = self.get_file_loader(file_id=file_id)
         return Loader.load()
 # To extract file content+metadata then make chunking
-    def process_file_content(self, file_content:list, file_id:str, chunk_size:int=100, overlap_size: int=20):
+    def process_file_content(self, file_content:list, file_id:str, chunk_size:int=100, overlap_size: int=20): #file_content=>Documents(content+Metadata)
 
         text_splitter= RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
@@ -55,11 +55,13 @@ class ProcessController(BaseController):
             rec.page_content
             for rec in file_content
         ]
+
         #To get metadata
         file_content_metadata=[
             rec.metadata
             for rec in file_content
         ]
+        
         #Chunking the data
         chunks= text_splitter.create_documents(
             file_content_texts,

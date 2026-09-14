@@ -1,0 +1,22 @@
+services:
+  mongodb:
+    image: mongo:7-jammy
+    container_name: mongodb
+    ports:
+      - "27007:27017"
+    # Mounts a storage path from your computer to the container to ensure data persists
+    # /mongodb (Host Path): Directory on your local host machine.
+    # /data/db (Container Path): Target mount path inside the container.
+    volumes:
+      - ./mongodb:/data/db
+    # Attaches this container to an isolated internal Docker network named backend.
+    # Other containers on the same backend network can communicate with this container using its service name (mongodb).
+    networks:
+      - backend
+    # Ensures high availability. If the container crashes, stops unexpectedly, or if Docker restarts,
+    # Docker will automatically boot the container back up.
+    restart: always
+
+# Declares the custom network environment (backend) used by the services.
+networks:
+  backend:
