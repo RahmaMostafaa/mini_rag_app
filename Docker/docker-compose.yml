@@ -8,9 +8,12 @@ services:
     # /mongodb (Host Path): Directory on your local host machine.
     # /data/db (Container Path): Target mount path inside the container.
     volumes:
-      - ./mongodb:/data/db
+      - mongodata:/data/db
     # Attaches this container to an isolated internal Docker network named backend.
     # Other containers on the same backend network can communicate with this container using its service name (mongodb).
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
     networks:
       - backend
     # Ensures high availability. If the container crashes, stops unexpectedly, or if Docker restarts,
@@ -20,3 +23,6 @@ services:
 # Declares the custom network environment (backend) used by the services.
 networks:
   backend:
+
+volumes:
+  mongodata:
