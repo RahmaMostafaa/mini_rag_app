@@ -24,7 +24,7 @@ data_router = APIRouter(
 async def upload_data( request: Request, project_id: str ,file: UploadFile ,app_settings: Settings=Depends(get_settings)):  
 
 
-    project_model = ProjectModel(
+    project_model = await ProjectModel.create_instance(
         db_client=request.app.db_client
     )
 
@@ -89,7 +89,7 @@ async def process_endpoint(request: Request,project_id:str,process_request:Proce
     do_reset = process_request.do_reset
     
     #retrieve the project from the database or create a new one if it doesn't exist
-    project_model = ProjectModel(
+    project_model = await ProjectModel.create_instance(
         db_client=request.app.db_client
     )
 
@@ -134,7 +134,7 @@ async def process_endpoint(request: Request,project_id:str,process_request:Proce
         for i,chunk in enumerate(file_chunks)   #file_chunks => Splitted chunk here (each chunk like document has page_content + metadata)
     ]
 
-    chunk_model = ChunkModel(
+    chunk_model = await ChunkModel.create_instance(
         db_client=request.app.db_client
     )
 

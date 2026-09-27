@@ -17,3 +17,17 @@ class Project(BaseModel):
 
     class Config: # TO Handle ObjectId errors
         arbitrary_types_allowed=True 
+
+
+    @classmethod
+    def get_indexes(cls):
+
+        return [
+            {
+                "key":[
+                    ("project_id",1) #1=>accending , -1=> decesending
+                ],
+                "name": "project_id_index_1",
+                "unique": True
+            }
+        ]

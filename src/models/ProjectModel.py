@@ -7,7 +7,31 @@ class ProjectModel(BaseDataModel):
 
         super().__init__(db_client=db_client)
         self.collection = self.db_client[DataBaseEnum.COLLECTION_PROJECT_NAME.value]
-   
+   #First we check if this collection created or not to add index
+   #in case of created we add indexes manually from 3T
+   #not existed: created it from this function with indexes
+
+# To make init + init_collection in the same time
+    @classmethod
+    async def create_instance(cls,db_client:object):
+            instance=cls(db_client) # Because it is static.define object here it this way
+            await instance.init_collection()
+            return instance
+
+    async def init_collection(self):
+      all_collection =await self.db_client.list_collection_names()
+      if DataBaseEnum.COLLECTION_PROJECT_NAME.value not in all_collection:
+        self.collection =self.db_client[DataBaseEnum.COLLECTION_PROJECT_NAME.value]
+        indexes= Project.get_indexes()
+        for index in indexes:
+            await self.collection.create_index(
+                index["key"],
+                name=index["name"],
+                unique=index["unique"]
+            ) # So here separate logic of index from implementation
+
+
+
     #Insert# a project into MongoDB.
     async def create_project(self, project: Project):
         #solve (_id) problem => (by_alias=True,exclude_inset=True)
