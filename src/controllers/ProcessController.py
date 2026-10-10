@@ -5,7 +5,7 @@ import os
 from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from models import ProcessingEnums
-
+import os
 
 class ProcessController(BaseController):
 
@@ -29,6 +29,10 @@ class ProcessController(BaseController):
             self.project_path,
             file_id
         )
+        #check file if it exist or not
+        if not os.path.exists(file_path):
+           return None
+
         if file_ext == ProcessingEnums.TEXT_EXT.value:
             return TextLoader(file_path, encoding ="utf_8")
 
@@ -36,11 +40,16 @@ class ProcessController(BaseController):
             return PyPDFLoader(file_path)
 
         return None
+
 # Use help get_file_loader to load the content
     def get_file_content(self, file_id:str):
 
         Loader = self.get_file_loader(file_id=file_id)
-        return Loader.load()
+        if Loader:
+            return Loader.load()
+        return None
+
+
 # To extract file content+metadata then make chunking
     def process_file_content(self, file_content:list, file_id:str, chunk_size:int=100, overlap_size: int=20): #file_content=>Documents(content+Metadata)
 

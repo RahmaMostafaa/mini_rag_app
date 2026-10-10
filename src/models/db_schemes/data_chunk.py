@@ -9,6 +9,7 @@ class DataChunk(BaseModel):
     chunk_metadata: dict
     chunk_order:int =Field(...,gt=0)
     chunk_project_id: ObjectId #related to project_id
+    chunk_assets_id: ObjectId
     
 
 
