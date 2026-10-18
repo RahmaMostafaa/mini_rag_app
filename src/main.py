@@ -19,10 +19,15 @@ async def startup_db_client():
     llm_provider_factory = LLMProviderFactory(Settings)
 
     #generation client 
+    #create genereation model object(OpenAI)
     app.generation_client = llm_provider_factory.create(provider=settings.GENERATION_BACKEND)
+    #from (OpenAI) object use function of set_generation_model to get specific model in OpenAI
     app.generation_client.set_generation_model(model_id =settings.GENERATION_MODEL_ID)
+
     #embedding client 
+    #create genereation model object(CoHere)
     app.embedding_client = llm_provider_factory.create(provider=settings.EMBEDDING_BACKEND)
+    #from (CoHere) object use function of set_generation_model to get specific model in CoHere
     app.embedding_client.set_embedding_model(model_id=settings.EMBEDDING_MODEL_ID
                                              embedding_size=settings.EMBEDDING_MODEL_SIZE)
 
