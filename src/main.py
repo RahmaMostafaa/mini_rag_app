@@ -4,11 +4,11 @@ from routes import data
 from motor.motor_asyncio import AsyncIOMotorClient
 from helpers.config import get_settings
 from stores.llm.LLMProviderFactory import LLMProviderFactory
+from stores.vectordb.VectoreDBProviderFactory import VectoreDBProviderFactory
 app=FastAPI()
 
 #Once system start
-@app.on_event("startup")
-async def startup_db_client():
+async def startup_spam():
     settings= get_settings()
 
 #server
@@ -17,6 +17,7 @@ async def startup_db_client():
     app.db_client = app.mongo_conn[settings.MONGOBD_DATABASE]
 
     llm_provider_factory = LLMProviderFactory(Settings)
+    vectordb_provider_factory = VectoreDBProviderFactory(Settings)
 
     #generation client 
     #create genereation model object(OpenAI)
@@ -31,10 +32,19 @@ async def startup_db_client():
     app.embedding_client.set_embedding_model(model_id=settings.EMBEDDING_MODEL_ID
                                              embedding_size=settings.EMBEDDING_MODEL_SIZE)
 
+    # vector db client
+    app.vectordb_client = vectordb_provider_factory.create(provider = settings.VECTOR_DB_BACKEND)
+   
+   
+    app.vectordb_client.connect()
 #close the database
-@app.on_event("shutdown")
-async def shutdown_db_client():
+async def shutdown__spam():
     app.mongo_conn.close()
+    app.vectordb_client.disconnect()
+
+
+app.router.lifespam.on_startup.append(startup_spam)
+app.router.lifespam.on_shutdown.append(shutdown__spam)
 
 app.include_router(base.base_router)
 
