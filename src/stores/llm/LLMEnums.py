@@ -14,8 +14,8 @@ class CoHereEnum(Enum):
     USER= "user"
     ASSISTANT= "assistant"
 
-    DOCUMENT = search_document
-    QUERY = search_query
+    DOCUMENT = "search_document"
+    QUERY = "search_query"
     
 class DocumentTypeEnum(Enum):
     DOCUMENT = "document"

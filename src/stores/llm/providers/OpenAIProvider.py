@@ -22,9 +22,10 @@ class OpenAIProvider(LLMInterface):
 
         self.client = OpenAI(
             api_key = self.api_key,
-            api_url = self.api_url
+            base_url = self.api_url if self.api_url and len(self.api_url) else None
         )
 
+        self.enums = OpenAIEnum
         self.logger = logging.getLogger(__name__)
 
     def set_generation_model(self, model_id:str):
@@ -38,7 +39,7 @@ class OpenAIProvider(LLMInterface):
     def process_text(self, text:str):
         return text[:self.default_input_max_characters].strip()
 
-    def generate_text(self, prompt:str,chat_history:list[], max_output_tokens:int=None, temperature:float=None):
+    def generate_text(self, prompt:str,chat_history:list=[], max_output_tokens:int=None, temperature:float=None):
         if not self.client:
             self.logger.error("OpenAI client was not set")
             return None
@@ -51,7 +52,7 @@ class OpenAIProvider(LLMInterface):
         temperature = temperature if temperature else  self.default_generation_temperature
 
         chat_history.append(
-            self.construct_prompt(prompt=prompt, role=OpenAIEnums.USER.value)
+            self.construct_prompt(prompt=prompt, role=OpenAIEnum.USER.value)
         )
 
         response = self.client.chat.completions.create(
@@ -60,8 +61,7 @@ class OpenAIProvider(LLMInterface):
             max_tokens = max_output_tokens,
             temperature = temperature
         )
-
-        if not response or not response.choices or len(response.choices) == 0 or not response.choices[0].messages
+        if not response or not response.choices or len(response.choices) == 0 or not response.choices[0].messages:
             self.logger.error("Error while generating text with OpenAI")
             return None
         # In case of no problem in generation
@@ -77,21 +77,21 @@ class OpenAIProvider(LLMInterface):
             self.logger.error("Embedding model for OpenAI was not set")
             return None
 
-        response = self.client.embeddings.create(
+       response = self.client.embeddings.create(
             model = self.embedding_model_id,
             input = text,
         )
 
-        if not response or not response.data or len(response.data) == 0 or not response.data[0].embedding:
+       if not response or not response.data or len(response.data) == 0 or not response.data[0].embedding:
             self.logger.error("Error embedding text with OpenAI")
             return None
 
-        return response.data[0].embedding
+       return response.data[0].embedding
         
 
     def construct_prompt(self, prompt:str, role:str):
             return{
-                "role":role
+                "role":role,
                 "content":self.process_text(prompt)
             }
 

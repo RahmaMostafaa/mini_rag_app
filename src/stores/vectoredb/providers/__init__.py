@@ -1,1 +1,0 @@
-from QdrantBDProvider import QdrantBDProvider

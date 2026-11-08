@@ -22,7 +22,7 @@ class CoHereProvider(LLMInterface):
             self.embedding_size = None
 
             self.client = cohere.ClientV2(api_key = self.api_key)
-
+            self.enums = CoHereEnum
             self.logger = logging.getLogger(__name__)
 
     def set_generation_model(self, model_id:str):
@@ -36,7 +36,46 @@ class CoHereProvider(LLMInterface):
         return text[:self.default_input_max_characters].strip()
 
 
-    def generate_text(self, prompt:str,chat_history:list[], max_output_tokens:int=None, temperature:float=None):
+    # def generate_text(self, prompt:str,chat_history:list=[], max_output_tokens:int=None, temperature:float=None):
+
+    #     if not self.client:
+    #         self.logger.error("CoHere client was not set")
+    #         return None
+
+    #     if not self.generation_model_id:
+    #         self.logger.error("Generation model for CoHere client was not set")
+    #         return None
+
+    #     max_output_tokens = max_output_tokens if max_output_tokens else  self.default_generation_max_output_tokens
+    #     temperature = temperature if temperature else  self.default_generation_temperature
+
+    #     chat_history.append(
+    #         self.construct_prompt(prompt=prompt, role=CoHereEnum.USER.value)
+    #      )
+
+    #     response = self.client.chat(
+    #         model = self.generation_model_id,
+    #         chat_history =chat_history,
+    #         max_tokens = max_output_tokens,
+    #         temperature = temperature
+    #     )
+
+    #     if not response or not response.message or len(response.message) == 0 or not response.message.content[0]:
+    #         self.logger.error("Error while generating text with CoHere")
+    #         return None
+
+    #     # In case of no problem in generation
+    #     return response.message.content[0].text
+
+
+    
+    def generate_text(
+        self,
+        prompt: str,
+        chat_history: list = None,
+        max_output_tokens: int = None,
+        temperature: float = None
+    ):
 
         if not self.client:
             self.logger.error("CoHere client was not set")
@@ -46,35 +85,53 @@ class CoHereProvider(LLMInterface):
             self.logger.error("Generation model for CoHere client was not set")
             return None
 
-        max_output_tokens = max_output_tokens if max_output_tokens else  self.default_generation_max_output_tokens
-        temperature = temperature if temperature else  self.default_generation_temperature
-
-        chat_history.append(
-            self.construct_prompt(prompt=prompt, role=CoHereEnum.USER.value)
-         )
-
-        response = self.client.chat(
-            model = self.generation_model_id,
-            chat_history =chat_history,
-            max_tokens = max_output_tokens,
-            temperature = temperature
+        max_output_tokens = (
+            max_output_tokens
+            if max_output_tokens is not None
+            else self.default_generation_max_output_tokens
         )
 
-        if not response or not response.message or len(response.message) == 0 or not response.message.content[0]
+        temperature = (
+            temperature
+            if temperature is not None
+            else self.default_generation_temperature
+        )
+
+        # Prepare chat history
+        messages = list(chat_history) if chat_history else []
+
+        # Append current user prompt
+        messages.append(
+            self.construct_prompt(
+                prompt=prompt,
+                role=CoHereEnum.USER.value
+            )
+        )
+
+        response = self.client.chat(
+            model=self.generation_model_id,
+            messages=messages,
+            max_tokens=max_output_tokens,
+            temperature=temperature
+        )
+
+        if not response or not response.message:
             self.logger.error("Error while generating text with CoHere")
             return None
 
-        # In case of no problem in generation
-        return response.message.content[0].text
+        if not response.message.content:
+            self.logger.error("Empty response from CoHere")
+            return None
 
+        return response.message.content[0].text
 
     def embed_text(self, text:str, document_type:str=None):
 
-         if not self.client:
+        if not self.client:
             self.logger.error("CoHere client was not set")
             return None
 
-       if not self.embedding_model_id:
+        if not self.embedding_model_id:
             self.logger.error("Embedding model for CoHere was not set")
             return None
 
@@ -89,7 +146,7 @@ class CoHereProvider(LLMInterface):
             embedding_types=["float"],
         )
         
-        if not response or not response.embeddings or len(response.embeddings) == 0 or not response.embeddings.float 
+        if not response or not response.embeddings or not response.embeddings.float:
             self.logger.error("Error embedding text with CoHere")
             return None
 
@@ -99,7 +156,7 @@ class CoHereProvider(LLMInterface):
 
     def construct_prompt(self, prompt:str, role:str):
        return {
-                "role":role
+                "role":role,
                 "content":self.process_text(prompt)
             }
 
