@@ -22,9 +22,9 @@ async def startup_span():
 
     #generation client 
     #create genereation model object(OpenAI)
-    app.generation_client = llm_provider_factory.create(provider=settings.GENERATION_BACKEND_COHERE)
+    app.generation_client = llm_provider_factory.create(provider=settings.GENERATION_BACKEND_OPENAI)
     #from (OpenAI) object use function of set_generation_model to get specific model in OpenAI
-    app.generation_client.set_generation_model(model_id =settings.GENERATION_MODEL_ID)
+    app.generation_client.set_generation_model(model_id =settings.GENERATION_MODEL_ID_OLLAMA)
  
     #embedding client 
     #create genereation model object(CoHere)
@@ -33,10 +33,10 @@ async def startup_span():
     app.embedding_client.set_embedding_model(model_id=settings.EMBEDDING_MODEL_ID,
                                              embedding_size=settings.EMBEDDING_MODEL_SIZE)
 
-    # vector db client
+    # vector db client 
     app.vectordb_client = vectordb_provider_factory.create(provider = settings.VECTOR_DB_BACKEND)
    
-    app.vectordb_client.connect()
+    app.vectordb_client.connect() 
 
     app.template_parser = TemplateParser(
         language = settings.PRIMARY_LANG,
